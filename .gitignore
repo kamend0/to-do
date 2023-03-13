@@ -2,6 +2,9 @@
 ignore/
 app.db
 to-do-venv/
+cred/
+ssl/
+run.bat
 
 # The following are all from GitHub's templates:
 # https://github.com/github/gitignore/blob/main/Python.gitignore

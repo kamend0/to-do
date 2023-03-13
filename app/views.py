@@ -1,19 +1,45 @@
 from app import app
 from app.utils import get_db
-from flask import request, g, jsonify
-# from models import User, Task
-
+from flask import request, session, jsonify, redirect, url_for, render_template
+from flask_dance.contrib.google import google
 
 
 @app.route("/")
 def welcome():
-    return("<h1>Welcome!</h1>")
+    if google.authorized:
+        session["email"] = google.get("/oauth2/v2/userinfo").json()["email"]
+        # user_email = session["email"]
+    return render_template('index.html', logged_in = google.authorized) #, logged_in = google.authorized)
+    #     return "<h1>Welcome! Your email is: {}</h1>".format(session["email"])
+    # return "<h1>Welcome! Please sign in.</h1>"
 
 
 @app.route("/hello", methods = ["GET"])
 def hello():
     username = request.args.get('username')
-    return(f"<h1>Hello, {username}!</h1>")
+    return f"<h1>Hello, {username}!</h1>"
+
+
+@app.route("/login/google")
+def google_login():
+    if not google.authorized:
+        return redirect(url_for("google.login"))
+    return redirect(url_for('welcome'))
+
+    # resp = google.get("/oauth2/v2/userinfo")
+    # # TODO DO NOT USE IN PRODUCTION, write behavior for failed authentication
+    # assert resp.ok, resp.text
+
+    # email = resp.json()["email"]
+    # # TODO Need to log the user in on our side if Google has cleared them
+    # session["email"] = email # Longer-term TODO switch from Session to SQLAlchemy solution
+
+    # return "You are now logged in with Google as {}".format(session["email"])
+
+
+@app.route("/login/google/callback")
+def google_authorized():
+    return redirect(url_for('welcome'))
 
 
 # Because we are creating a new resource for use (a user in our user table), need to
@@ -46,7 +72,6 @@ def add_user():
             (username, email)
         )
         db.commit()
-        return(jsonify({'message': f'User {username} created successfully.'}), 201)
+        return jsonify({'message': f'User {username} created successfully.'}), 201
     else:
-        return(jsonify({'error': error}), 400)
-    
+        return jsonify({'error': error}), 400
