@@ -15,6 +15,7 @@ def before_request():
     if google.authorized:
         session['email'] = google.get("/oauth2/v2/userinfo").json()["email"]
 
+
 # Tear down db connection after requests
 # TODO Resource-intensive to do this with every request; improve at scale
 @app.teardown_appcontext
@@ -26,8 +27,9 @@ def close_connection(exception):
         db.session.remove()
         g.pop('db', None)
 
+
 @app.route("/")
-def welcome():
+def home():
     return render_template('index.html', logged_in = google.authorized)
 
 
@@ -39,14 +41,14 @@ def google_login():
     # Check if new user
     #   If so, create an account record for them
     #   If not, redirect to their tasks page
-    return redirect(url_for('welcome'))
+    return redirect(url_for("home"))
 
 
 @app.route("/tasks")
 def tasks():
     # If not logged in, return to the home page, which will be a log-in prompt
     if not google.authorized:
-        return(redirect(url_for("welcome")))
+        return(redirect(url_for("home")))
     
     # Get the user 
     # Find what tasks the user has saved

@@ -27,6 +27,8 @@ with app.app_context():
 # Database
 db = SQLAlchemy(app)
 
+
+# CLI Commands
 @app.cli.command("initdb")
 def initdb():
     """Initializes SQLite3 DB using models.py."""
