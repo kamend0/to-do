@@ -1,5 +1,4 @@
 from app import app, db
-# from app.utils import get_db
 from app.models import User, Task
 from flask import (request, session, g, current_app,
                    jsonify, redirect, url_for, render_template)
@@ -7,9 +6,9 @@ from flask_dance.contrib.google import google
 from oauthlib.oauth2.rfc6749.errors import InvalidClientIdError, TokenExpiredError
 
 
-# Load some essential data and tools before each request, if needed
 @app.before_request
 def before_request():
+    """Assigns established database connection from __init__ to g; grabs user email if available."""
     # Assign DB connection (imported from __init__) to g
     g.db = db
 
@@ -41,10 +40,10 @@ def token_expired(_):
     return redirect(url_for('home'))
 
 
-# Tear down db connection after requests
-# TODO Resource-intensive to do this with every request; improve at scale
+# TODO-Long-term: Resource-intensive to do this with every request; improve at scale
 @app.teardown_appcontext
 def close_connection(exception):
+    """Disconnects database and removes from global environment."""
     if hasattr(g, "db"):
         db = g.db
         if exception:
@@ -55,6 +54,8 @@ def close_connection(exception):
 
 @app.route("/")
 def home():
+    """Simple Welcome page."""
+    # TODO Add link to tasks page here, or make solely a login prompt.
     return render_template('index.html', logged_in = google.authorized)
 
 
@@ -69,7 +70,9 @@ def google_login():
 
 @app.route("/tasks", methods = ['GET', 'POST'])
 def tasks():
-    # If not logged in, return to the home page, which will be a log-in prompt
+    """UI for user to see, edit, add to, and delete their saved tasks."""
+    # TODO Implement editing and deleting of tasks.
+    # If not logged in, return to the home page, which should be a log-in prompt
     if not google.authorized:
         return redirect(url_for("home"))
     
@@ -96,27 +99,11 @@ def tasks():
     return render_template('tasks.html', tasks = user_tasks)
 
 
-@app.route('/add_task', methods = ['POST'])
-def add_task():
-    if google.authorized and session["email"] is not None:
-        title = request.json.get('title')
-        description = request.json.get('description')
-        email = session["email"]
-        new_task = Task(title = title, description = description, user_email = email)
-        db.session.add(new_task)
-        db.session.commit()
-
-        return jsonify({'message': 'Task added successfully'})
-    
-    return jsonify({'message': 'Error - user not logged in.'})
-
-
 @app.route("/login/google/callback")
 def google_authorized():
-    # Once authenticated, check if a new or returning user
-    # If new, create an account record for them
-    # Afterwards, or if not, redirect to their tasks page
-    # TODO Test if session has been updated by before_request()
+    """Handle authenticated users, adding to database if
+    new, or retrieving existing data if returning."""
+    # TODO Consider adding some more sophisticated checks - see archived user_login function
     existing_email = db.session.query(User).filter_by(email = session["email"]).first()
     if session["email"] is not None and existing_email is None:
         # Add user to our User table
@@ -125,45 +112,3 @@ def google_authorized():
         db.session.commit() # Makes temporary changes permanent
         
     return redirect(url_for('tasks'))
-
-
-# Because we are creating a new resource (a user in our user table), need to
-#   use a POST method here, not a GET (sending data to the server), and send
-#   data via JSON, not URL args
-# TODO Determine if new user by querying user table.
-#   If new user, then the email should be taken from the session, or google.get(...), and
-#   an entry created for them in the user table.
-#   If returning user, simply redirect them to their tasks page.
-# TODO-LATER Then the user should be prompted to provide a username.
-# Essentially, this route should be deprecated.
-@app.route("/add_user", methods = ['POST'])
-def add_user():
-    username = request.json.get('username')
-    email = request.json.get('email')
-    db = g.db
-    error = None
-
-    if not username:
-        error = 'Please provide a valid username.'
-    elif not email:
-        error = 'Please provide a valid URL.'
-    elif db.execute(
-        'SELECT id FROM user WHERE email = ?', (email,)
-    ).fetchone() is not None:
-        error = "Either the email you provided is invalid or already in use." + \
-            " Please provide a different email address."
-    elif db.execute(
-        'SELECT id FROM user WHERE name = ?', (username,)
-    ).fetchone() is not None:
-        error = f'User {username} is already registered.'
-
-    # TODO Use authorization here, don't just immediately dive into DB interaction
-    if error is None:
-        db.execute(
-            'INSERT INTO user (name, email) VALUES (?, ?)',
-            (username, email)
-        )
-        db.commit()
-        return jsonify({'message': f'User {username} created successfully.'}), 201
-    else:
-        return jsonify({'error': error}), 400
