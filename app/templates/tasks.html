@@ -1,27 +1,100 @@
+<!-- <!DOCTYPE html>
+<html>
+    <h1>My Tasks</h1>
+    <ul>
+    {% for task in tasks %}
+        <li>{{ task.title }} - {{ task.description }}</li>
+    {% endfor %}
+    </ul>
+
+    <h2>Add Task</h2>
+    <form id="add-task-form">
+        <label for="task-title">Title:</label>
+        <input type="text" id="task-title" name="title"><br>
+
+        <label for="task-description">Description:</label>
+        <textarea id="task-description" name="description"></textarea><br>
+
+        <input type="submit" value="Add Task">
+    </form>
+
+    <script>
+    var form = document.getElementById('add-task-form');
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        var title = document.getElementById('task-title').value;
+        var description = document.getElementById('task-description').value;
+        var data = JSON.stringify({'title': title, 'description': description});
+        fetch('/tasks', {
+            method: 'POST',
+            body: data,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(function(response) {
+            if (response.ok) {
+                alert('Task added successfully');
+            } else {
+                alert('Failed to add task');
+            }
+        });
+    });
+    </script>
+</html> -->
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Tasks</title>
-</head>
-<body>
-    <h1>My Tasks</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for task in tasks %}
-                <tr>
-                    <td>{{ task.taskTitle }}</td>
-                    <td>{{ task.taskDescription }}</td>
-                    <td>{{ "Completed" if task.isCompleted else "Pending" }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
+  </head>
+  <body>
+    <h1>Tasks</h1>
+    <ul id="task-list">
+      {% for task in tasks %}
+        <li>{{ task.title }} - {{ task.description }}</li>
+      {% endfor %}
+    </ul>
+    <form id="add-task-form">
+      <input type="text" id="title" name="title" placeholder="Title">
+      <input type="text" id="description" name="description" placeholder="Description">
+      <button type="submit">Add Task</button>
+    </form>
+    <script>
+      var form = document.getElementById('add-task-form');
+      var taskList = document.getElementById('task-list');
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        const data = { title: title, description: description };
+        fetch('/tasks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Create a new HTML element for the task and append it to the task list
+            var taskElement = document.createElement('li');
+            taskElement.innerText = `${title} - ${description}`;
+            taskList.appendChild(taskElement);
+
+            // Clear out the submit forms
+            var formTitle = document.getElementById('title');
+            var formDescription = document.getElementById('description');
+            formTitle.value = '';
+            formDescription.value = '';
+          } else {
+            alert('Failed to add task: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error(error);
+          alert('An error occurred while adding the task');
+        });
+      });
+    </script>
+  </body>
 </html>

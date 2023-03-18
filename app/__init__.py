@@ -11,7 +11,6 @@ app.config.from_object('config')
 with app.app_context():
     current_app.secret_key = current_app.config.get('FLASK_SECRET')
 
-
 # Auth
 with app.app_context():
     google_bp = make_google_blueprint(
@@ -24,16 +23,16 @@ with app.app_context():
     app.register_blueprint(google_bp, url_prefix = "/")
 
 
-# Database
-db = SQLAlchemy(app)
-
-
 # CLI Commands
 @app.cli.command("initdb")
 def initdb():
     """Initializes SQLite3 DB using models.py."""
     db.create_all()
     print('Database initialized.')
+
+
+# Database
+db = SQLAlchemy(app)
 
 
 # App routes - need to happen after db is defined

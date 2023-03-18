@@ -1,8 +1,10 @@
 from app import app, db
-from app.utils import get_db
+# from app.utils import get_db
 from app.models import User, Task
-from flask import request, session, g, jsonify, redirect, url_for, render_template
+from flask import (request, session, g, current_app,
+                   jsonify, redirect, url_for, render_template)
 from flask_dance.contrib.google import google
+from oauthlib.oauth2.rfc6749.errors import InvalidClientIdError, TokenExpiredError
 
 
 # Load some essential data and tools before each request, if needed
@@ -12,8 +14,31 @@ def before_request():
     g.db = db
 
     # Check if user is Google-authenticated; if so, save email and id to session
+    session["email"] = None
     if google.authorized:
         session['email'] = google.get("/oauth2/v2/userinfo").json()["email"]
+
+
+@app.errorhandler(TokenExpiredError)
+def token_expired(_):
+    # Source: https://github.com/spotify/gimme/blob/master/gimme/views.py#L52-L94
+    """Revokes token and empties session."""
+    if google.authorized:
+        try:
+            google.get(
+                'https://accounts.google.com/o/oauth2/revoke',
+                params={
+                    'token':
+                    current_app.blueprints['google'].token['access_token']},
+            )
+        except TokenExpiredError:
+            pass
+        except InvalidClientIdError:
+            # Our OAuth session apparently expired. We could renew the token
+            # and logout again but that seems a bit silly, so for now fake it.
+            pass
+    session.clear()
+    return redirect(url_for('home'))
 
 
 # Tear down db connection after requests
@@ -38,28 +63,67 @@ def google_login():
     if not google.authorized:
         return redirect(url_for("google.login"))
     
-    # Check if new user
-    #   If so, create an account record for them
-    #   If not, redirect to their tasks page
+    # Route should be redundant if not logged in
     return redirect(url_for("home"))
 
 
-@app.route("/tasks")
+@app.route("/tasks", methods = ['GET', 'POST'])
 def tasks():
     # If not logged in, return to the home page, which will be a log-in prompt
     if not google.authorized:
-        return(redirect(url_for("home")))
+        return redirect(url_for("home"))
     
-    # Get the user 
-    # Find what tasks the user has saved
-    user_tasks = Task.query.filter_by(email = session['email']).all()
+    # Get the user's tasks, who needs to have been added to User table ahead of this request
+    user_tasks = Task.query.filter_by(user_email = session['email']).all()
 
-    return(render_template('tasks.html', tasks = user_tasks))
+    if request.method == 'POST':
+        if google.authorized and session["email"] is not None:
+            # Grab data from user request and session for identification
+            data = request.get_json()
+            title = data['title']
+            description = data['description']
+            user = session["email"]
+
+            # Write to database
+            new_task = Task(title = title, description = description, user_email = user)
+            db.session.add(new_task)
+            db.session.commit()
+
+            return jsonify({'success': True, 'message': 'Task added successfully'})
+        
+        return jsonify({'success': False, 'message': 'Please log in using Google'})
+
+    return render_template('tasks.html', tasks = user_tasks)
+
+
+@app.route('/add_task', methods = ['POST'])
+def add_task():
+    if google.authorized and session["email"] is not None:
+        title = request.json.get('title')
+        description = request.json.get('description')
+        email = session["email"]
+        new_task = Task(title = title, description = description, user_email = email)
+        db.session.add(new_task)
+        db.session.commit()
+
+        return jsonify({'message': 'Task added successfully'})
+    
+    return jsonify({'message': 'Error - user not logged in.'})
 
 
 @app.route("/login/google/callback")
 def google_authorized():
-    # Once authenticated, bring to tasks app
+    # Once authenticated, check if a new or returning user
+    # If new, create an account record for them
+    # Afterwards, or if not, redirect to their tasks page
+    # TODO Test if session has been updated by before_request()
+    existing_email = db.session.query(User).filter_by(email = session["email"]).first()
+    if session["email"] is not None and existing_email is None:
+        # Add user to our User table
+        new_user = User(email = session["email"])
+        db.session.add(new_user) # Add to db temporarily
+        db.session.commit() # Makes temporary changes permanent
+        
     return redirect(url_for('tasks'))
 
 
@@ -76,7 +140,6 @@ def google_authorized():
 def add_user():
     username = request.json.get('username')
     email = request.json.get('email')
-    # db = get_db()
     db = g.db
     error = None
 
