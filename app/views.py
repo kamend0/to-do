@@ -1,54 +1,96 @@
-from app import app
+from app import app, db
 from app.utils import get_db
-from flask import request, session, jsonify, redirect, url_for, render_template
+from app.models import User, Task
+from flask import request, session, g, jsonify, redirect, url_for, render_template
 from flask_dance.contrib.google import google
+# from flask_sqlalchemy import SQLAlchemy
 
+
+# Load some essential data and tools before each request, if needed
+@app.before_request
+def before_request():
+    # Assign DB connection (imported from __init__) to g
+    g.db = db
+
+    # Check if user is Google-authenticated; if so, save email and id to session
+    if google.authorized:
+        session['email'] = google.get("/oauth2/v2/userinfo").json()["email"]
+
+    # # Establish DB connection if global scope if not already available
+    # if 'db' not in g:
+    #     g.db = get_db()
+
+# Tear down db connection after requests
+# TODO Resource-intensive; improve at scale
+@app.teardown_appcontext
+def close_connection(exception):
+    if hasattr(g, "db"):
+        db = g.db
+        if exception:
+            db.session.rollback()
+        db.session.remove()
+    # db = getattr(g, 'db', None)
+    # if db is not None:
+    #     db.close()
+    #     g.pop('db', None)
 
 @app.route("/")
 def welcome():
-    if google.authorized:
-        session["email"] = google.get("/oauth2/v2/userinfo").json()["email"]
-        # user_email = session["email"]
-    return render_template('index.html', logged_in = google.authorized) #, logged_in = google.authorized)
-    #     return "<h1>Welcome! Your email is: {}</h1>".format(session["email"])
-    # return "<h1>Welcome! Please sign in.</h1>"
+    return render_template('index.html', logged_in = google.authorized) 
 
 
-@app.route("/hello", methods = ["GET"])
-def hello():
-    username = request.args.get('username')
-    return f"<h1>Hello, {username}!</h1>"
+# @app.route("/hello", methods = ["GET"])
+# def hello():
+#     username = request.args.get('username')
+#     return f"<h1>Hello, {username}!</h1>"
 
 
 @app.route("/login/google")
 def google_login():
     if not google.authorized:
         return redirect(url_for("google.login"))
+    
+    # Check if new user
+    #   If so, create an account record for them
+    #   If not, redirect to their tasks page
     return redirect(url_for('welcome'))
 
-    # resp = google.get("/oauth2/v2/userinfo")
-    # # TODO DO NOT USE IN PRODUCTION, write behavior for failed authentication
-    # assert resp.ok, resp.text
 
-    # email = resp.json()["email"]
-    # # TODO Need to log the user in on our side if Google has cleared them
-    # session["email"] = email # Longer-term TODO switch from Session to SQLAlchemy solution
+@app.route("/tasks")
+def tasks():
+    # If not logged in, return to the home page, which will be a log-in prompt
+    if not google.authorized:
+        return(redirect(url_for("welcome")))
+    
+    # Get the user 
+    # Find what tasks the user has saved
+    user_tasks = Task.query.filter_by(email = session['email']).all()
 
-    # return "You are now logged in with Google as {}".format(session["email"])
+    return(render_template('tasks.html', tasks = user_tasks))
+    # return(f"<h1>Under Construction: You'll soon find your tasks here, { session['email'] }!</h1>")
 
 
 @app.route("/login/google/callback")
 def google_authorized():
-    return redirect(url_for('welcome'))
+    # Once authenticated, bring to tasks app
+    return redirect(url_for('tasks'))
 
 
-# Because we are creating a new resource for use (a user in our user table), need to
-#   use a POST method here, not a GET (sending data to the server)
+# Because we are creating a new resource (a user in our user table), need to
+#   use a POST method here, not a GET (sending data to the server), and send
+#   data via JSON, not URL args
+# TODO Determine if new user by querying user table.
+#   If new user, then the email should be taken from the session, or google.get(...), and
+#   an entry created for them in the user table.
+#   If returning user, simply redirect them to their tasks page.
+# TODO-LATER Then the user should be prompted to provide a username.
+# Essentially, this route should be deprecated.
 @app.route("/add_user", methods = ['POST'])
 def add_user():
     username = request.json.get('username')
     email = request.json.get('email')
-    db = get_db()
+    # db = get_db()
+    db = g.db
     error = None
 
     if not username:

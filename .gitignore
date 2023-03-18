@@ -4,6 +4,7 @@ app.db
 to-do-venv/
 cred/
 ssl/
+archive/
 run.bat
 
 # The following are all from GitHub's templates:
