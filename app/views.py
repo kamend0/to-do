@@ -3,7 +3,6 @@ from app.utils import get_db
 from app.models import User, Task
 from flask import request, session, g, jsonify, redirect, url_for, render_template
 from flask_dance.contrib.google import google
-# from flask_sqlalchemy import SQLAlchemy
 
 
 # Load some essential data and tools before each request, if needed
@@ -16,12 +15,8 @@ def before_request():
     if google.authorized:
         session['email'] = google.get("/oauth2/v2/userinfo").json()["email"]
 
-    # # Establish DB connection if global scope if not already available
-    # if 'db' not in g:
-    #     g.db = get_db()
-
 # Tear down db connection after requests
-# TODO Resource-intensive; improve at scale
+# TODO Resource-intensive to do this with every request; improve at scale
 @app.teardown_appcontext
 def close_connection(exception):
     if hasattr(g, "db"):
@@ -29,20 +24,11 @@ def close_connection(exception):
         if exception:
             db.session.rollback()
         db.session.remove()
-    # db = getattr(g, 'db', None)
-    # if db is not None:
-    #     db.close()
-    #     g.pop('db', None)
+        g.pop('db', None)
 
 @app.route("/")
 def welcome():
-    return render_template('index.html', logged_in = google.authorized) 
-
-
-# @app.route("/hello", methods = ["GET"])
-# def hello():
-#     username = request.args.get('username')
-#     return f"<h1>Hello, {username}!</h1>"
+    return render_template('index.html', logged_in = google.authorized)
 
 
 @app.route("/login/google")
@@ -67,7 +53,6 @@ def tasks():
     user_tasks = Task.query.filter_by(email = session['email']).all()
 
     return(render_template('tasks.html', tasks = user_tasks))
-    # return(f"<h1>Under Construction: You'll soon find your tasks here, { session['email'] }!</h1>")
 
 
 @app.route("/login/google/callback")

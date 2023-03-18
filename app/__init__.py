@@ -1,11 +1,8 @@
 import click
-from flask import Flask, current_app #, g, current_app
+from flask import Flask, current_app
 from flask_sslify import SSLify
 from flask_dance.contrib.google import make_google_blueprint
 from flask_sqlalchemy import SQLAlchemy
-# from google_auth_oauthlib.flow import Flow
-# from flask_login import LoginManager
-# from flask_migrate import Migrate
 
 # Main
 app = Flask(__name__)
@@ -37,5 +34,5 @@ def initdb():
     print('Database initialized.')
 
 
-# App routes
-from app import views, models # These imports need to happen after db is defined
+# App routes - need to happen after db is defined
+from app import views, models
