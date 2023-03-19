@@ -107,12 +107,13 @@ def tasks():
                 }
             )
             return response_to_client
-            # return jsonify({'success': True, 'message': 'Task added successfully'})
         
-        return jsonify({'success': False, 'message': 'Please log in'})
+        return jsonify({'success': False, 'id': -1, 'message': 'Please log in'})
 
     # Final render
     return render_template('tasks.html', tasks = user_tasks)
+
+# @app.route("/add_task", methods = ['POST'])
 
 
 @app.route("/login/google/callback")

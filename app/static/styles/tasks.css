@@ -1,5 +1,11 @@
 /* Styles tasks.html */
 
-.task {
-    display:inline-block
+/* > * applies style to all children of ".class" */
+.task > * {
+    display:inline-block;
+    justify-content: space-between;
+}
+
+.del-button {
+    padding: 0px 5px 0px;
 }
