@@ -2,58 +2,79 @@
 <html>
   <head>
     <title>Tasks</title>
+    <link rel="stylesheet"
+          type="text/css"
+          href="{{ url_for('static', filename = 'styles/tasks.css') }}">
+    </link>
   </head>
   <body>
     <h1>Tasks</h1>
     <ul id="task-list">
       {% for task in tasks %}
-        <!-- <div id="task_{{ task.id }}"> -->
-          <li id="task_{{ task.id }}">{{ task.title }} - {{ task.description }}</li>
-          <!-- <p id="del_task_{{ task.id }}" href="del_path"> x </p> -->
+        <div id="task_{{ task.id }}" class="task">
+          <li id="text_task_{{ task.id }}">{{ task.title }} - {{ task.description }}</li>
+          <p id="del_task_{{ task.id }}"> x </p>
           <!-- <p id="edit_task_{{ task.id }}" href="edit_path"> e </p> -->
-        <!-- </div> -->
+        </div>
       {% endfor %}
     </ul>
     <form id="add-task-form">
-      <input type="text" id="title" name="title" placeholder="Title">
-      <input type="text" id="description" name="description" placeholder="Description">
+      <input type="text" id="new-task-title" name="title" placeholder="Title">
+      <input type="text" id="new-task-description" name="description" placeholder="Description">
       <button type="submit">Add Task</button>
     </form>
     <script>
       // ADDING TASKS
       var form = document.getElementById('add-task-form');
       var taskList = document.getElementById('task-list');
-      var tempNewTaskNum = -1; // Negative to avoid conflicts with real existing IDs
+      // var tempNewTaskNum = -1; // Negative to avoid conflicts with real existing IDs
       form.addEventListener('submit', (event) => {
         event.preventDefault();
-        const title = document.getElementById('title').value;
-        const description = document.getElementById('description').value;
+        const title = document.getElementById('new-task-title').value;
+        const description = document.getElementById('new-task-description').value;
         const data = { title: title, description: description };
         fetch('/tasks', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(data)
         })
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            // Create a new HTML element for the task and append it to the task list
-            var taskElement = document.createElement('li');
+            /* Flask should kick back the new, unique task ID back to us. It doesn't
+            send back the data we already sent it (title/desc). Need to render this
+            new task with JS to avoid having to refresh the page. The unique ID enables
+            us to edit and delete the task uniquely, just like any other task. */
 
-            // Generate new entry with temp id, increment task number *after* rendering
-            var tempID = "task_" + tempNewTaskNum--;
-            console.log(tempID);
-            taskElement.setAttribute('id', tempID);
-            taskElement.innerText = `${title} - ${description}`;
+            // First, clear out the submit forms for a better user experience, since
+            // we already have what we need stored locally
+            // var formTitle = document.getElementById('new-task-title');
+            // var formDescription = document.getElementById('new-task-description');
+            document.getElementById('new-task-title').value = '';
+            document.getElementById('new-task-description').value = '';
+            // formTitle.value = '';
+            // formDescription.value = '';
+
+            // Create a new HTML div element for the task
+            var taskElement = document.createElement('div');
+            var newID = "task_" + data.id;
+            console.log(newID); // DEBUG
+            taskElement.setAttribute('id', newID);
+
+            // Add task text list element to the div with its new, unique id
+            var taskTextElement = document.createElement('li');
+            taskTextElement.setAttribute('id', "text_" + newID);
+            taskTextElement.innerText = `${title} - ${description}`;
+            taskElement.appendChild(taskTextElement); // Append to task div element
+
+            // Add the delete task button to the div with its new, unique id
+            var taskDelElement = document.createElement('p');
+            taskDelElement.setAttribute('id', "del_" + newID);
+            taskDelElement.innerText = " x ";
+            taskElement.appendChild(taskDelElement);  // Append to task div element
+            
+            // Add the entirety of the newly generated div element back to the main taskList
             taskList.appendChild(taskElement);
-
-            // Clear out the submit forms
-            var formTitle = document.getElementById('title');
-            var formDescription = document.getElementById('description');
-            formTitle.value = '';
-            formDescription.value = '';
           } else {
             alert('Failed to add task: ' + data.message);
           }
@@ -63,6 +84,8 @@
           alert('An error occurred while adding the task');
         });
       });
+
+
     </script>
   </body>
 </html>

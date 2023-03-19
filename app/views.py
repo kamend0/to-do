@@ -93,9 +93,23 @@ def tasks():
             db.session.add(new_task)
             db.session.commit()
 
-            return jsonify({'success': True, 'message': 'Task added successfully'})
+            # Need to return back information, including the task's unique ID, back to
+            #   the client side to render the new task as well as enable deleting and
+            #   editing of the unique task, even if the title and description match
+            #   other added tasks
+            response_to_client = jsonify(
+                {
+                    'success': True,
+                    'id': new_task.id,
+                    # 'title': new_task.title,
+                    # 'description': new_task.description,
+                    'message': 'Task added successfully'
+                }
+            )
+            return response_to_client
+            # return jsonify({'success': True, 'message': 'Task added successfully'})
         
-        return jsonify({'success': False, 'message': 'Please log in using Google'})
+        return jsonify({'success': False, 'message': 'Please log in'})
 
     # Final render
     return render_template('tasks.html', tasks = user_tasks)
