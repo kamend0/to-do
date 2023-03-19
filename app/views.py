@@ -76,7 +76,8 @@ def google_authorized():
         new_user = User(email = session["email"])
         db.session.add(new_user) # Add to db temporarily
         db.session.commit() # Makes temporary changes permanent
-        
+    
+    # session["email"] will be updated by before_request
     return redirect(url_for('tasks'))
 
 
@@ -90,17 +91,16 @@ def home():
     return render_template('index.html', logged_in = google.authorized)
 
 
-@app.route("/tasks", methods = ['GET'])
+@app.route("/tasks")#, methods = ['GET'])
 def tasks():
     """UI for user to see, edit, add to, and delete their saved tasks - 'Read'"""
-    # TODO Implement editing and deleting of tasks.
     # If not logged in, return to the home page, which should be a log-in prompt
     if not google.authorized:
         return redirect(url_for("home"))
     
     # Get the user's tasks, who needs to have been added to User table ahead of this request
-    if request.method == 'GET':
-        user_tasks = Task.query.filter_by(user_email = session['email']).all()
+    # if request.method == 'GET':
+    user_tasks = Task.query.filter_by(user_email = session['email']).all()
     
     return render_template('tasks.html', tasks = user_tasks)
 
@@ -116,7 +116,7 @@ def add_task():
             'message': 'An error occurred. Please log in or try again'
         }
     )
-    
+
     # If conditions are met, update response body
     if request.method == 'POST':
         if google.authorized and session["email"] is not None:
@@ -144,5 +144,23 @@ def add_task():
                     'message': 'Task added successfully'
                 }
             )
+
+    return response_to_client
+
+
+@app.route("delete_task", methods = ["DELETE"])
+def delete_task():
+    """Delete a user's task by its unique ID so long as they are logged in - 'Delete'"""
+    # Default response is a failure
+    response_to_client = jsonify(
+        {
+            'success': False,
+            'message': 'An error occurred. Please log in or try again'
+        }
+    )
+
+     # If conditions are met, update response body
+    if request.method == 'DELETE':
+        if google.authorized and session["email"] is not None:
 
     return response_to_client

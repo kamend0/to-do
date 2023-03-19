@@ -33,12 +33,14 @@
       var taskList = document.getElementById('task-list');
       form.addEventListener('submit', (event) => {
         event.preventDefault();
+        // Grab data we need from submit form
         const title = document.getElementById('new-task-title').value.trim();
         const description = document.getElementById('new-task-description').value.trim();
         const data = {
           title: title,
           description: description
         };
+        // Invoke add_task method from views.py
         fetch('/add_task', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -47,48 +49,9 @@
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            /* Flask should kick back the new, unique task ID back to us. It doesn't
-            send back the data we already sent it (title/desc). Need to render this
-            new task with JS to avoid having to refresh the page. The unique ID enables
-            us to edit and delete the task uniquely, just like any other task. */
-
-            // First, clear out the submit forms for a better user experience, since
-            // we already have what we need stored locally
-            document.getElementById('new-task-title').value = '';
-            document.getElementById('new-task-description').value = '';
-
-            // Create a new HTML div element for the task
-            var taskElement = document.createElement('div');
-            var newID = "task_" + data.id;
-            taskElement.setAttribute('id', newID);
-            taskElement.classList.add('task');
-
-            // Add task text list element to the div with its new, unique id
-            var taskTextListElement = document.createElement('li');
-            taskTextListElement.setAttribute('id', "text_" + newID);
-            taskTextListElement.classList.add('task-text');
-            taskTextListElement.innerText = `${title.trim()} - ${description.trim()}`;
-            taskElement.appendChild(taskTextListElement); // Append to task div element
-
-            // Add the delete task button to the div with its new, unique id
-            var taskDelButton = document.createElement('button');
-            taskDelButton.setAttribute('id', "del_" + newID);
-            taskDelButton.classList.add('del-button');
-            taskDelButton.setAttribute('data-task-id', data.id);
-            taskDelButton.innerText = "Delete";
-            // For actual delete functionality, need add an event listener
-            // TODO Put entire delete button event listener generation into a function,
-            //  call whenever a button is added; this is wet
-            // TODO Figure out why the hell there's a space between the description
-            //  and the delete button when it's generated but not when initially rendered
-            taskDelButton.addEventListener('click', (event) => {
-              const taskID = event.target.dataset.taskId; // Get ID of task to be deleted
-              console.log(`Deleting entry ${taskID}...`);
-            })
-            taskElement.appendChild(taskDelButton);  // Append to task div element
-            
-            // Add the entirety of the newly generated div element back to the main taskList
-            taskList.appendChild(taskElement);
+            // TODO Longer-term, make more dynamic
+            // Some work on this has been done: see "dynamicTasks.html" in archive
+            location.reload();
           } else {
             alert('Failed to add task: ' + data.message);
           }
@@ -99,19 +62,37 @@
         });
       });
 
-      // DELETING TASKS
-      // First, grab all of the shown delete buttons by their class; this will only
-      //  happen when the page is initially loaded, and newly-generated buttons
-      //  will have to be given event listeners manually as well
-      var delButtons = document.querySelectorAll('.del-button');
 
+      // DELETING TASKS
+      // Delete buttons only correctly implemented when page is reloaded
+      var delButtons = document.querySelectorAll('.del-button');
       // Then, add an event listener for each button
       delButtons.forEach((button) => {
         button.addEventListener('click', (event) => {
-          const taskID = event.target.dataset.taskId; // Get ID of task to be deleted
-          console.log(`Deleting entry ${taskID}...`);
-        })
-      })
+          event.preventDefault();
+          // Grab data we need: task's unique ID
+          const taskID = event.target.dataset.taskId;
+          // Invoke delete_task method from views.py
+          fetch('/delete_task', {
+            method: 'DELETE',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // TODO Longer-term, make more dynamic
+              location.reload();
+            } else {
+              alert('Failed to delete task. Please refresh the page and try again.');
+            }
+          })
+          .catch(error => {
+            console.error(error);
+            alert('An error occurred while deleting the task');
+            });
+          });
+        });
     </script>
   </body>
 </html>
