@@ -6,6 +6,8 @@ from flask_dance.contrib.google import google
 from oauthlib.oauth2.rfc6749.errors import InvalidClientIdError, TokenExpiredError
 
 
+# Session / App Context / Setup routes and methods
+
 @app.before_request
 def before_request():
     """Assigns established database connection from __init__ to g; grabs user email if available."""
@@ -52,12 +54,7 @@ def close_connection(exception):
         g.pop('db', None)
 
 
-@app.route("/")
-def home():
-    """Simple Welcome page."""
-    # TODO Add link to tasks page here, or make solely a login prompt.
-    return render_template('index.html', logged_in = google.authorized)
-
+# Auth routes and methods using Flask-Dance and Google OAuth
 
 @app.route("/login/google")
 def google_login():
@@ -66,54 +63,6 @@ def google_login():
     
     # Route should be redundant if not logged in
     return redirect(url_for("home"))
-
-
-@app.route("/tasks", methods = ['GET', 'POST'])
-def tasks():
-    """UI for user to see, edit, add to, and delete their saved tasks."""
-    # TODO Implement editing and deleting of tasks.
-    # If not logged in, return to the home page, which should be a log-in prompt
-    if not google.authorized:
-        return redirect(url_for("home"))
-    
-    # Get the user's tasks, who needs to have been added to User table ahead of this request
-    user_tasks = Task.query.filter_by(user_email = session['email']).all()
-
-    # Method to add tasks the user provides via the form
-    if request.method == 'POST':
-        if google.authorized and session["email"] is not None:
-            # Grab data from user request and session for identification
-            data = request.get_json()
-            title = data['title']
-            description = data['description']
-            user = session["email"]
-
-            # Write to database
-            new_task = Task(title = title, description = description, user_email = user)
-            db.session.add(new_task)
-            db.session.commit()
-
-            # Need to return back information, including the task's unique ID, back to
-            #   the client side to render the new task as well as enable deleting and
-            #   editing of the unique task, even if the title and description match
-            #   other added tasks
-            response_to_client = jsonify(
-                {
-                    'success': True,
-                    'id': new_task.id,
-                    # 'title': new_task.title,
-                    # 'description': new_task.description,
-                    'message': 'Task added successfully'
-                }
-            )
-            return response_to_client
-        
-        return jsonify({'success': False, 'id': -1, 'message': 'Please log in'})
-
-    # Final render
-    return render_template('tasks.html', tasks = user_tasks)
-
-# @app.route("/add_task", methods = ['POST'])
 
 
 @app.route("/login/google/callback")
@@ -129,3 +78,61 @@ def google_authorized():
         db.session.commit() # Makes temporary changes permanent
         
     return redirect(url_for('tasks'))
+
+
+# UI routes and methods
+
+@app.route("/")
+def home():
+    """Simple Welcome page."""
+    # TODO Add link to tasks page here, or make solely a login prompt.
+    return render_template('index.html', logged_in = google.authorized)
+
+
+@app.route("/tasks", methods = ['GET'])
+def tasks():
+    """UI for user to see, edit, add to, and delete their saved tasks."""
+    # TODO Implement editing and deleting of tasks.
+    # If not logged in, return to the home page, which should be a log-in prompt
+    if not google.authorized:
+        return redirect(url_for("home"))
+    
+    # Get the user's tasks, who needs to have been added to User table ahead of this request
+    if request.method == 'GET':
+        user_tasks = Task.query.filter_by(user_email = session['email']).all()
+    
+    return render_template('tasks.html', tasks = user_tasks)
+
+@app.route("/add_task", methods = ['POST'])
+def add_task():
+    """Add user-provided task to their account if logged in"""
+    if request.method == 'POST':
+        if google.authorized and session["email"] is not None:
+            # Grab data from user request and session for identification
+            data = request.get_json()
+            title = data['title']
+            description = data['description']
+            user = session["email"]
+
+            # Write to database
+            new_task = Task(title = title, description = description, user_email = user)
+            db.session.add(new_task)
+            db.session.commit()
+
+            # Need to return back information, including the task's unique ID, to the
+            #   client side to render the new task as well as enable deleting and
+            #   editing of the unique task, even if the title and description match
+            #   other added tasks
+            response_to_client = jsonify(
+                {
+                    'success': True,
+                    'id': new_task.id,
+                    # 'title': new_task.title,
+                    # 'description': new_task.description,
+                    'message': 'Task added successfully'
+                }
+            )
+
+            return response_to_client
+        
+        return jsonify({'success': False, 'id': -1, 'message': 'Please log in'})

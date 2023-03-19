@@ -7,6 +7,7 @@
         {% if logged_in %}
             <h1>Welcome!</h1>
             <p>Your email is: {{ session['email'] }}</p>
+            <p><a href="{{ url_for('tasks') }}">Click here</a> to use your to-do list.</p>
         {% else %}
             <h1>Please <a href="{{ url_for('google_login') }}">log in with Google</a>.</h1>
         {% endif %}
