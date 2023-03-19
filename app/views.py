@@ -85,13 +85,14 @@ def google_authorized():
 @app.route("/")
 def home():
     """Simple Welcome page."""
-    # TODO Add link to tasks page here, or make solely a login prompt.
+    # TODO Consider changing to redirect directly to tasks if authorized,
+    #   and prompt to log-in only if not authorized.
     return render_template('index.html', logged_in = google.authorized)
 
 
 @app.route("/tasks", methods = ['GET'])
 def tasks():
-    """UI for user to see, edit, add to, and delete their saved tasks."""
+    """UI for user to see, edit, add to, and delete their saved tasks - 'Read'"""
     # TODO Implement editing and deleting of tasks.
     # If not logged in, return to the home page, which should be a log-in prompt
     if not google.authorized:
@@ -103,9 +104,20 @@ def tasks():
     
     return render_template('tasks.html', tasks = user_tasks)
 
+
 @app.route("/add_task", methods = ['POST'])
 def add_task():
-    """Add user-provided task to their account if logged in"""
+    """Add user-provided task to their account if logged in - 'Create'"""
+    # Default response is a failure
+    response_to_client = jsonify(
+        {
+            'success': False,
+            'id': -1,
+            'message': 'An error occurred. Please log in or try again'
+        }
+    )
+    
+    # If conditions are met, update response body
     if request.method == 'POST':
         if google.authorized and session["email"] is not None:
             # Grab data from user request and session for identification
@@ -114,7 +126,7 @@ def add_task():
             description = data['description']
             user = session["email"]
 
-            # Write to database
+            # Write to SQL database
             new_task = Task(title = title, description = description, user_email = user)
             db.session.add(new_task)
             db.session.commit()
@@ -133,6 +145,4 @@ def add_task():
                 }
             )
 
-            return response_to_client
-        
-        return jsonify({'success': False, 'id': -1, 'message': 'Please log in'})
+    return response_to_client
