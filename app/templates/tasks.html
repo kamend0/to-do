@@ -7,7 +7,11 @@
     <h1>Tasks</h1>
     <ul id="task-list">
       {% for task in tasks %}
-        <li>{{ task.title }} - {{ task.description }}</li>
+        <!-- <div id="task_{{ task.id }}"> -->
+          <li id="task_{{ task.id }}">{{ task.title }} - {{ task.description }}</li>
+          <!-- <p id="del_task_{{ task.id }}" href="del_path"> x </p> -->
+          <!-- <p id="edit_task_{{ task.id }}" href="edit_path"> e </p> -->
+        <!-- </div> -->
       {% endfor %}
     </ul>
     <form id="add-task-form">
@@ -16,8 +20,10 @@
       <button type="submit">Add Task</button>
     </form>
     <script>
+      // ADDING TASKS
       var form = document.getElementById('add-task-form');
       var taskList = document.getElementById('task-list');
+      var tempNewTaskNum = -1; // Negative to avoid conflicts with real existing IDs
       form.addEventListener('submit', (event) => {
         event.preventDefault();
         const title = document.getElementById('title').value;
@@ -35,6 +41,11 @@
           if (data.success) {
             // Create a new HTML element for the task and append it to the task list
             var taskElement = document.createElement('li');
+
+            // Generate new entry with temp id, increment task number *after* rendering
+            var tempID = "task_" + tempNewTaskNum--;
+            console.log(tempID);
+            taskElement.setAttribute('id', tempID);
             taskElement.innerText = `${title} - ${description}`;
             taskList.appendChild(taskElement);
 

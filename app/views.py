@@ -79,6 +79,7 @@ def tasks():
     # Get the user's tasks, who needs to have been added to User table ahead of this request
     user_tasks = Task.query.filter_by(user_email = session['email']).all()
 
+    # Method to add tasks the user provides via the form
     if request.method == 'POST':
         if google.authorized and session["email"] is not None:
             # Grab data from user request and session for identification
@@ -96,6 +97,7 @@ def tasks():
         
         return jsonify({'success': False, 'message': 'Please log in using Google'})
 
+    # Final render
     return render_template('tasks.html', tasks = user_tasks)
 
 
