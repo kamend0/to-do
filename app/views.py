@@ -11,14 +11,15 @@ from oauthlib.oauth2.rfc6749.errors import InvalidClientIdError, TokenExpiredErr
 
 @app.before_request
 def before_request():
-    """Assigns established database connection from __init__ to g; grabs user email if available."""
+    """Assigns established database connection from __init__ to g; grabs user email if available,
+    initializing to None if not to facilitate easier checks later."""
     # Assign DB connection (imported from __init__) to g
     g.db = db
 
     # Check if user is Google-authenticated; if so, save email and id to session
     session["email"] = None
     if google.authorized:
-        session['email'] = google.get("/oauth2/v2/userinfo").json()["email"]
+        session["email"] = google.get("/oauth2/v2/userinfo").json()["email"]
 
 
 @app.errorhandler(TokenExpiredError)
@@ -28,10 +29,10 @@ def token_expired(_):
     if google.authorized:
         try:
             google.get(
-                'https://accounts.google.com/o/oauth2/revoke',
-                params={
-                    'token':
-                    current_app.blueprints['google'].token['access_token']},
+                "https://accounts.google.com/o/oauth2/revoke",
+                params = {
+                    'token': current_app.blueprints["google"].token["access_token"]
+                },
             )
         except TokenExpiredError:
             pass
@@ -40,10 +41,9 @@ def token_expired(_):
             # and logout again but that seems a bit silly, so for now fake it.
             pass
     session.clear()
-    return redirect(url_for('home'))
+    return redirect(url_for("home"))
 
 
-# TODO-Long-term: Resource-intensive to do this with every request; improve at scale
 @app.teardown_appcontext
 def close_connection(exception):
     """Disconnects database and removes from global environment."""
@@ -52,7 +52,7 @@ def close_connection(exception):
         if exception:
             db.session.rollback()
         db.session.remove()
-        g.pop('db', None)
+        g.pop("db", None)
 
 
 # Auth routes and methods using Flask-Dance and Google OAuth
@@ -79,7 +79,7 @@ def google_authorized():
         db.session.commit() # Makes temporary changes permanent
     
     # session["email"] will be updated by before_request
-    return redirect(url_for('tasks'))
+    return redirect(url_for("tasks"))
 
 
 # UI routes and methods
@@ -89,7 +89,7 @@ def home():
     """Simple Welcome page."""
     # TODO Consider changing to redirect directly to tasks if authorized,
     #   and prompt to log-in only if not authorized.
-    return render_template('index.html', logged_in = google.authorized)
+    return render_template("index.html", logged_in = google.authorized)
 
 
 @app.route("/tasks")#, methods = ['GET'])
@@ -100,9 +100,9 @@ def tasks():
         return redirect(url_for("home"))
     
     # Get the user's tasks, who needs to have been added to User table ahead of this request
-    user_tasks = Task.query.filter_by(user_email = session['email']).all()
+    user_tasks = Task.query.filter_by(user_email = session["email"]).all()
     
-    return render_template('tasks.html', tasks = user_tasks)
+    return render_template("tasks.html", tasks = user_tasks)
 
 
 @app.route("/add_task", methods = ['POST'])
@@ -122,8 +122,8 @@ def add_task():
         if google.authorized and session["email"] is not None:
             # Grab data from user request and session for identification
             data = request.get_json()
-            title = data['title']
-            description = data['description']
+            title = data["title"]
+            description = data["description"]
             user = session["email"]
 
             # Write to SQL database
@@ -148,7 +148,7 @@ def add_task():
     return response_to_client
 
 
-@app.route("/delete_task", methods = ["DELETE"])
+@app.route("/delete_task", methods = ['DELETE'])
 def delete_task():
     """Delete a user's task by its unique ID so long as they are logged in - 'Delete'"""
     # Default response is a failure
@@ -165,7 +165,7 @@ def delete_task():
             # ID needs to be passed by client to us, which will be unique both
             #   throughout the tasks table as well as in the user's subset
             data = request.get_json()
-            taskID = data['taskId']
+            taskID = data["taskId"]
 
             # Delete the task corresponding to this ID
             doomed_rows = db.session.query(Task).filter_by(
