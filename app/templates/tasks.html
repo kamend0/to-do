@@ -71,7 +71,10 @@
         button.addEventListener('click', (event) => {
           event.preventDefault();
           // Grab data we need: task's unique ID
-          const taskID = event.target.dataset.taskId;
+          const taskId = event.target.dataset.taskId;
+          const data = {
+            taskId: taskId
+          }
           // Invoke delete_task method from views.py
           fetch('/delete_task', {
             method: 'DELETE',

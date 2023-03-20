@@ -4,6 +4,7 @@ from flask import (request, session, g, current_app,
                    jsonify, redirect, url_for, render_template)
 from flask_dance.contrib.google import google
 from oauthlib.oauth2.rfc6749.errors import InvalidClientIdError, TokenExpiredError
+# from sys import stderr # DEBUG - print with this: print(value, file = stderr)
 
 
 # Session / App Context / Setup routes and methods
@@ -99,7 +100,6 @@ def tasks():
         return redirect(url_for("home"))
     
     # Get the user's tasks, who needs to have been added to User table ahead of this request
-    # if request.method == 'GET':
     user_tasks = Task.query.filter_by(user_email = session['email']).all()
     
     return render_template('tasks.html', tasks = user_tasks)
@@ -148,7 +148,7 @@ def add_task():
     return response_to_client
 
 
-@app.route("delete_task", methods = ["DELETE"])
+@app.route("/delete_task", methods = ["DELETE"])
 def delete_task():
     """Delete a user's task by its unique ID so long as they are logged in - 'Delete'"""
     # Default response is a failure
@@ -162,5 +162,24 @@ def delete_task():
      # If conditions are met, update response body
     if request.method == 'DELETE':
         if google.authorized and session["email"] is not None:
+            # ID needs to be passed by client to us, which will be unique both
+            #   throughout the tasks table as well as in the user's subset
+            data = request.get_json()
+            taskID = data['taskId']
+
+            # Delete the task corresponding to this ID
+            doomed_rows = db.session.query(Task).filter_by(
+                id = taskID,
+                user_email = session["email"]
+            )
+            num_rows_deleted = doomed_rows.delete() # Temporary
+            db.session.commit() # Make temporary delete permanent
+
+            response_to_client = jsonify(
+                {
+                    'success': True,
+                    'message': f"{num_rows_deleted} rows deleted successfully"
+                }
+            )
 
     return response_to_client
