@@ -5,7 +5,7 @@ class User(db.Model):
     # Email is what is called a "natural key"
     email = db.Column(db.String(120), unique = True, nullable = False, primary_key = True)
     # name = db.Column(db.String(50), nullable = False) # TODO Implement usernames
-    tasks = db.relationship('Task', backref='user', lazy = True)
+    tasks = db.relationship('Task', backref = 'user', lazy = True)
 
     def __repr__(self):
         return f'<User {self.email}>'
