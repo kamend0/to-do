@@ -73,7 +73,8 @@ delButtons.forEach((button) => {
 // EDITING TASKS - "Update"
 // Edit buttons only correctly implemented when page is reloaded
 // TODO Make this a little smarter: user can change the innerText of the
-//  button and relying on it for logic is a little silly
+//  button and relying on it for logic is a little silly, but works
+//  for now
 var editButtons = document.querySelectorAll('.edit-button');
 editButtons.forEach((button) => {
     button.addEventListener('click', (event) => {
@@ -109,12 +110,11 @@ editButtons.forEach((button) => {
             formInputElement.focus();
         } else if (event.target.innerText === "Confirm") {
             // Invoke edit_task method from views.py
-            // We *should* have all of the objects from above;
-            // TODO Make this more robust, as technically user could
-            //  mess with the buttons via inspect and force PUTs
+            const taskID = event.target.dataset.taskId; // Unique task ID
+            const formInputElement = document.getElementById("edit-task-input-" + taskID);
             const newTaskText = formInputElement.value;
             const data = {
-                taskId: taskID,
+                taskID: taskID,
                 newTaskText: newTaskText
             };
 

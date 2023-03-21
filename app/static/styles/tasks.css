@@ -1,16 +1,45 @@
 /* Styles tasks.html */
 
-/* > * applies style to all children of ".class" */
-.task > * {
-    display:inline-block;
-    justify-content: space-between;
+
+h1 {
+    margin: 0;
 }
 
+
+#task-list {
+    /* margin-block-start: 0.75em;
+    margin-block-end: 0.75em; */
+    margin: 0.75em;
+    padding-inline-start: 0em;
+}
+
+
+#add-task-form {
+    margin: 0;
+}
+
+
+/* > * applies style to all children of ".class" */
+.task > * {
+    display: inline-block;
+    margin-block-start: 0.5em;
+    margin-block-end: 0.5em;
+    /* justify-content: space-between; */
+}
+
+
+.task-text {
+    padding: 0px 15px 0px 0px;
+    margin-block-start: 0;
+    margin-block-end: 0;
+}
+
+
 .del-button {
-    padding: 0px 5px 0px;
+    padding: 0px 15px 0px;
 }
 
 
 .edit-button {
-    padding: 0px 5px 0px;
+    padding: 0px 15px 0px;
 }

@@ -16,10 +16,12 @@ def before_request():
     # Assign DB connection (imported from __init__) to g
     g.db = db
 
-    # Check if user is Google-authenticated; if so, save email and id to session
-    session["email"] = None
-    if google.authorized:
-        session["email"] = google.get("/oauth2/v2/userinfo").json()["email"]
+    # Check if user is Google-authenticated; if so, save email to session
+    try:
+        if google.authorized:
+            session["email"] = google.get("/oauth2/v2/userinfo").json()["email"]
+    except:
+        session["email"] = None
 
 
 @app.errorhandler(TokenExpiredError)
@@ -92,7 +94,7 @@ def home():
     return render_template("index.html", logged_in = google.authorized)
 
 
-@app.route("/tasks")#, methods = ['GET'])
+@app.route("/tasks")
 def tasks():
     """UI for user to see, edit, add to, and delete their saved tasks - 'Read'"""
     # If not logged in, return to the home page, which should be a log-in prompt
@@ -102,7 +104,7 @@ def tasks():
     # Get the user's tasks, who needs to have been added to User table ahead of this request
     user_tasks = Task.query.filter_by(user_email = session["email"]).all()
     
-    return render_template("tasks.html", tasks = user_tasks)
+    return render_template("tasks.html", tasks = user_tasks, user_email = session["email"])
 
 
 @app.route("/add_task", methods = ['POST'])
@@ -201,7 +203,7 @@ def edit_task():
         if google.authorized and session["email"] is not None:
             # ID needs to be passed by client to us, which will be unique both
             #   throughout the tasks table as well as in the user's subset
-            data = request.json()
+            data = request.get_json()
             taskID = data["taskID"]
             newTaskText = data["newTaskText"]
 
