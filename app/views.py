@@ -122,12 +122,12 @@ def add_task():
         if google.authorized and session["email"] is not None:
             # Grab data from user request and session for identification
             data = request.get_json()
-            title = data["title"]
+            # title = data["title"]
             description = data["description"]
             user = session["email"]
 
             # Write to SQL database
-            new_task = Task(title = title, description = description, user_email = user)
+            new_task = Task(title = "NA", description = description, user_email = user)
             db.session.add(new_task)
             db.session.commit()
 
@@ -159,13 +159,13 @@ def delete_task():
         }
     )
 
-     # If conditions are met, update response body
+     # If conditions are met, delete the task, and update response body
     if request.method == 'DELETE':
         if google.authorized and session["email"] is not None:
             # ID needs to be passed by client to us, which will be unique both
             #   throughout the tasks table as well as in the user's subset
             data = request.get_json()
-            taskID = data["taskId"]
+            taskID = data["taskID"]
 
             # Delete the task corresponding to this ID
             doomed_rows = db.session.query(Task).filter_by(
@@ -182,4 +182,41 @@ def delete_task():
                 }
             )
 
+    return response_to_client
+
+
+@app.route("/edit_task", methods = ['PUT'])
+def edit_task():
+    """Edit a user's task by its unique ID so long as they are logged in - 'Update'"""
+    # Default response is a failure
+    response_to_client = jsonify(
+        {
+            'success': False,
+            'message': 'An error occurred. Please log in or try again'
+        }
+    )
+
+    # If conditions are met, edit the task, and update response body
+    if request.method == 'PUT':
+        if google.authorized and session["email"] is not None:
+            # ID needs to be passed by client to us, which will be unique both
+            #   throughout the tasks table as well as in the user's subset
+            data = request.json()
+            taskID = data["taskID"]
+            newTaskText = data["newTaskText"]
+
+            # Edit the user's task according to this ID
+            db.session.query(Task).filter_by(
+                id = taskID,
+                user_email = session["email"]
+            ).update({'description': newTaskText})
+            db.session.commit()
+
+            response_to_client = jsonify(
+                {
+                    'success': True,
+                    'message': "Task successfully edited"
+                }
+            )
+    
     return response_to_client
