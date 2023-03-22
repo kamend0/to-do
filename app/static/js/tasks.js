@@ -1,3 +1,7 @@
+// User should always be able to just type away when the page
+// loads and get a new task going
+document.getElementById('new-task-description').focus();
+
 // ADDING TASKS - "Create"
 var form = document.getElementById('add-task-form');
 var taskList = document.getElementById('task-list');
@@ -80,8 +84,8 @@ editButtons.forEach((button) => {
     button.addEventListener('click', (event) => {
         event.preventDefault();
 
-        if (event.target.innerText === "Edit") {
-            event.target.innerText = "Confirm"; // Change button and its behavior
+        if (event.target.innerText === "edit") {
+            event.target.innerText = "done"; // Change button and its behavior
 
             // Change the task being shown as a <p> element into an
             //  editable <form> with an <input> child
@@ -93,6 +97,7 @@ editButtons.forEach((button) => {
             // Create new element, a form which will have an input child
             var newFormElement = document.createElement("form");
             newFormElement.setAttribute("id", "edit-task-form-" + taskID);
+            newFormElement.setAttribute("class", "edit-task-form");
 
             // Format the input child element
             var formInputElement = document.createElement("input");
@@ -108,7 +113,7 @@ editButtons.forEach((button) => {
             existingTaskTextElement.parentNode.replaceChild(newFormElement,
                                                             existingTaskTextElement);
             formInputElement.focus();
-        } else if (event.target.innerText === "Confirm") {
+        } else if (event.target.innerText === "done") {
             // Invoke edit_task method from views.py
             const taskID = event.target.dataset.taskId; // Unique task ID
             const formInputElement = document.getElementById("edit-task-input-" + taskID);

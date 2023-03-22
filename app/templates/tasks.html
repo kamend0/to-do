@@ -8,36 +8,37 @@
     </link>
   </head>
   <body>
-    <h1>To-Do List</h1>
-    <p><b>For user with email address: </b>{{ user_email }}</p>
-    <ul id="task-list">
-      {% for task in tasks %}
-        <div id="task_{{ task.id }}" class="task">
-          <!-- <li id="text_li_{{ task.id }}"
-              class="task-li"
-          ></li> -->
-          <p id="task_text_{{ task.id }}"
-             class="task-text"
-          >{{ task.description }}</p>
-          <button id="edit_task_{{ task.id }}"
-                  class="edit-button"
-                  data-task-id="{{ task.id }}"
-          >Edit</button>
-          <button id="del_task_{{ task.id }}"
-                  class="del-button"
-                  data-task-id="{{ task.id }}"
-          >Delete</button>
-        </div>
-      {% endfor %}
-    </ul>
-    <form id="add-task-form">
-      <!-- <input type="text" id="new-task-title" name="title" placeholder="Title"> -->
-      <input type="text" id="new-task-description" name="Task" placeholder="Add a new task...">
-      <button type="submit">Add</button>
-    </form>
-    <!-- <div id="testing">Just testing stuff here.</div> -->
+    <div id="to-do-list">
+      <h1>To-Do List</h1>
+      <p><b>For user with email address: </b>{{ user_email }}</p>
+      <form id="add-task-form">
+        <!-- <input type="text" id="new-task-title" name="title" placeholder="Title"> -->
+        <input type="text" id="new-task-description" name="Task" placeholder="New task">
+        <button type="submit">add</button>
+      </form>
+      <ul id="task-list">
+        {% for task in tasks %}
+          <div id="task_{{ task.id }}" class="task">
+            <!-- <li id="text_li_{{ task.id }}"
+                class="task-li"
+            ></li> -->
+            <p id="task_text_{{ task.id }}"
+              class="task-text"
+            >{{ task.description }}</p>
+            <button id="edit_task_{{ task.id }}"
+                    class="edit-button"
+                    data-task-id="{{ task.id }}"
+            >edit</button>
+            <button id="del_task_{{ task.id }}"
+                    class="del-button"
+                    data-task-id="{{ task.id }}"
+            >x</button>
+          </div>
+        {% endfor %}
+      </ul>
+      <!-- <div id="testing">Just testing stuff here.</div> -->
+    </div>
     <script
-      type=text/javascript
       src="{{ url_for('static', filename = 'js/tasks.js') }}"
     ></script>
   </body>

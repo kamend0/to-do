@@ -1,8 +1,24 @@
 /* Styles tasks.html */
 
 
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+
+html * {
+    font-family: Arial !important;
+}
+
+
 h1 {
     margin: 0;
+}
+
+
+body {
+    background-color: #CBD1C7;
 }
 
 
@@ -16,6 +32,15 @@ h1 {
 
 #add-task-form {
     margin: 0;
+}
+
+
+#to-do-list {
+    margin: auto;
+    width: 50%;
+    padding: 1.25em;
+    justify-content: center;
+    text-align: center;
 }
 
 
@@ -35,11 +60,40 @@ h1 {
 }
 
 
+.edit-task-form {
+    animation: fadeIn 0.33s;
+    -webkit-animation: fadeIn 0.33s;
+    -moz-animation: fadeIn 0.33s;
+    -o-animation: fadeIn 0.33s;
+    -ms-animation: fadeIn 0.33s;
+}
+
+
 .del-button {
-    padding: 0px 15px 0px;
+    justify-content: center;
+    text-align: center;
+    color: #EBEBEB;
+    padding: 0px 0.2em 0px;
+    background-color: #C27770;
+    width: 2em;
+}
+
+
+.del-button:hover {
+    transition: background-color 0.3s ease;
+    background-color: #8E443D;
 }
 
 
 .edit-button {
-    padding: 0px 15px 0px;
+    justify-content: center;
+    text-align: center;
+    padding: 0px 0.2em 0px;
+    background-color: #FFA90A;
+    width: 4em;
+}
+
+.edit-button:hover {
+    transition: background-color 0.3s ease;
+    background-color: #E09200;
 }

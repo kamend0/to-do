@@ -5,6 +5,7 @@ to-do-venv/
 cred/
 ssl/
 archive/
+working/
 run.bat
 
 # The following are all from GitHub's templates:
