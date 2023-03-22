@@ -18,7 +18,7 @@ h1 {
 
 
 body {
-    background-color: #CBD1C7;
+    background-color: #E0F0D3;
 }
 
 
@@ -54,9 +54,13 @@ body {
 
 
 .task-text {
+    animation: fadeIn 0.2s;
+    -webkit-animation: fadeIn 0.2s;
+    -moz-animation: fadeIn 0.2s;
+    -o-animation: fadeIn 0.2s;
+    -ms-animation: fadeIn 0.2s;
     padding: 0px 15px 0px 0px;
-    margin-block-start: 0;
-    margin-block-end: 0;
+    margin: 0;
 }
 
 
@@ -66,34 +70,45 @@ body {
     -moz-animation: fadeIn 0.33s;
     -o-animation: fadeIn 0.33s;
     -ms-animation: fadeIn 0.33s;
+    margin: 0;
 }
 
 
 .del-button {
+    animation: fadeIn 0.2s;
+    -webkit-animation: fadeIn 0.2s;
+    -moz-animation: fadeIn 0.2s;
+    -o-animation: fadeIn 0.2s;
+    -ms-animation: fadeIn 0.2s;
     justify-content: center;
     text-align: center;
     color: #EBEBEB;
     padding: 0px 0.2em 0px;
-    background-color: #bb4237;
+    background-color: #ca372a;
     width: 2em;
 }
 
 
 .del-button:hover {
     transition: background-color 0.3s ease;
-    background-color: #8b3730;
+    background-color: #d14c40;
 }
 
 
 .edit-button {
+    animation: fadeIn 0.2s;
+    -webkit-animation: fadeIn 0.2s;
+    -moz-animation: fadeIn 0.2s;
+    -o-animation: fadeIn 0.2s;
+    -ms-animation: fadeIn 0.2s;
     justify-content: center;
     text-align: center;
     padding: 0px 0.2em 0px;
-    background-color: #e49c17;
+    background-color: #f7ab20;
     width: 4em;
 }
 
 .edit-button:hover {
     transition: background-color 0.3s ease;
-    background-color: #f8b333;
+    background-color: #ffb836;
 }
