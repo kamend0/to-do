@@ -107,11 +107,13 @@ editButtons.forEach((button) => {
           var newFormElement = document.createElement("form");
           newFormElement.setAttribute("id", "edit-task-form-" + taskID);
           newFormElement.setAttribute("class", "edit-task-form");
+          // formInputElement.classList.add("edit-task-form");
 
           // Format the input child element
           var formInputElement = document.createElement("input");
           formInputElement.setAttribute("type", "text");
           formInputElement.setAttribute("id", "edit-task-input-" + taskID);
+          formInputElement.classList.add("edit-task-input");
           
           // Fill the input field with the existing task's original text
           formInputElement.value = existingTaskTextElement.innerText;

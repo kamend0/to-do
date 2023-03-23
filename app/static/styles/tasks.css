@@ -117,7 +117,8 @@ body {
 
 .buttons {
     white-space: nowrap;
-    flex: 1 0 10%;
+    flex: 0 0 10%;
+    min-width: 10em;
 }
 
 
@@ -196,4 +197,30 @@ body {
 /* Added dynamically if tasks are finished */
 .struck-through {
     text-decoration: line-through;
+}
+
+.edit-task-form {
+    position: relative;
+    margin: 0;
+    flex: 1 0 auto;
+    text-align: left;
+}
+
+.edit-task-input {
+    color: #3D3D3D;
+    background-color: #E0F0D3;
+    border-width: 0;
+    border: none;
+    font-size: 16px;
+    outline: 0;
+    position: relative;
+    margin: 0;
+    padding: 5px 0 0 0;
+    width: 100%;
+    /* flex: 1 0 auto; */
+    text-align: left;
+}
+
+.edit-task-input:focus {
+    outline: none;
 }
