@@ -4,11 +4,12 @@ A straight-forward to-do list CRUD web app written in the Flask framework, using
 
 Database is a local SQLite3. Currently, no passwords are stored; the only way to use the app is via Google OAuth.
 
+Only configured to run locally currently, so Google OAuth redirect is to local path, among other things.
+
 
 ## Some leftover items
 
-* Fix the Edit task form's styling - difficult, because dynamically generated.
-* **IN-PROGRESS** Continue to make prettier and more user-friendly with more CSS.
+* Deploy to PythonAnywhere!
 * Implement a simple email sign-up and login, exploring password encryption.
 * Implement task groups, and display tasks in groups.
 * Have an option for temporary users, where their tasks are only stored in perhaps the session, and are destroyed once they leave the page.
