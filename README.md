@@ -7,6 +7,7 @@ Database is a local SQLite3. Currently, no passwords are stored; the only way to
 
 ## Some leftover items
 
+* Fix the Edit task form's styling - difficult, because dynamically generated.
 * **IN-PROGRESS** Continue to make prettier and more user-friendly with more CSS.
 * Implement a simple email sign-up and login, exploring password encryption.
 * Implement task groups, and display tasks in groups.
