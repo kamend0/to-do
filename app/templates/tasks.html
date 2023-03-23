@@ -14,25 +14,29 @@
       <form id="add-task-form">
         <!-- <input type="text" id="new-task-title" name="title" placeholder="Title"> -->
         <input type="text" id="new-task-description" name="Task" placeholder="New task">
-        <button type="submit">add</button>
+        <button type="submit" id="submit-button">+</button>
       </form>
       <ul id="task-list">
         {% for task in tasks %}
           <div id="task_{{ task.id }}" class="task">
-            <!-- <li id="text_li_{{ task.id }}"
-                class="task-li"
-            ></li> -->
+            <div class="buttons">
+              <button id="del_task_{{ task.id }}"
+                      class="task-button del-button"
+                      data-task-id="{{ task.id }}"
+              >✗</button>
+              <button id="edit_task_{{ task.id }}"
+                      class="task-button edit-button"
+                      data-task-id="{{ task.id }}"
+                      data-state="edit"
+              >✎</button>
+              <button id="finish_task_{{ task.id }}"
+                      class="task-button finish-button"
+                      data-task-id="{{ task.id }}"
+              >✓</button>
+            </div>
             <p id="task_text_{{ task.id }}"
               class="task-text"
             >{{ task.description }}</p>
-            <button id="edit_task_{{ task.id }}"
-                    class="edit-button"
-                    data-task-id="{{ task.id }}"
-            >edit</button>
-            <button id="del_task_{{ task.id }}"
-                    class="del-button"
-                    data-task-id="{{ task.id }}"
-            >x</button>
           </div>
         {% endfor %}
       </ul>

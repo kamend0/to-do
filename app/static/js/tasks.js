@@ -84,36 +84,45 @@ editButtons.forEach((button) => {
     button.addEventListener('click', (event) => {
         event.preventDefault();
 
-        if (event.target.innerText === "edit") {
-            event.target.innerText = "done"; // Change button and its behavior
+        if (event.target.dataset.state === "edit") {
+          // Hide the finish task button: done editing button will use the same 
+          // check mark symbol, so want to avoid confusing the user, as well as not 
+          // having to deal with the situation where they hit the finished button
+          // while editing the task
+          const taskID = event.target.dataset.taskId; // Unique task ID
+          const finishTaskID = "finish_task_" + taskID;
+          const finishTaskButton = document.getElementById(finishTaskID);
+          finishTaskButton.style.display = 'none'; // Get rid of it!
 
-            // Change the task being shown as a <p> element into an
-            //  editable <form> with an <input> child
+          // Now, make it known that the button is in a different state, and
+          // show the user this as well by changing symbol shown
+          event.target.dataset.state = "doneEditing";
+          event.target.innerText = "✓";
 
-            // First, get task's unique ID as well as the corresponding text
-            const taskID = event.target.dataset.taskId; // Unique task ID
-            var existingTaskTextElement = document.getElementById("task_text_" + taskID);
-            
-            // Create new element, a form which will have an input child
-            var newFormElement = document.createElement("form");
-            newFormElement.setAttribute("id", "edit-task-form-" + taskID);
-            newFormElement.setAttribute("class", "edit-task-form");
+          // Change the task being shown as a <p> element into an
+          //  editable <form> with an <input> child          
+          var existingTaskTextElement = document.getElementById("task_text_" + taskID);
+          
+          // Create new element, a form which will have an input child
+          var newFormElement = document.createElement("form");
+          newFormElement.setAttribute("id", "edit-task-form-" + taskID);
+          newFormElement.setAttribute("class", "edit-task-form");
 
-            // Format the input child element
-            var formInputElement = document.createElement("input");
-            formInputElement.setAttribute("type", "text");
-            formInputElement.setAttribute("id", "edit-task-input-" + taskID);
-            
-            // Fill the input field with the existing task's original text
-            formInputElement.value = existingTaskTextElement.innerText;
-            
-            // Finalize form element, then *replace* task text element
-            //  with this new form, and then focus on the form
-            newFormElement.appendChild(formInputElement);
-            existingTaskTextElement.parentNode.replaceChild(newFormElement,
-                                                            existingTaskTextElement);
-            formInputElement.focus();
-        } else if (event.target.innerText === "done") {
+          // Format the input child element
+          var formInputElement = document.createElement("input");
+          formInputElement.setAttribute("type", "text");
+          formInputElement.setAttribute("id", "edit-task-input-" + taskID);
+          
+          // Fill the input field with the existing task's original text
+          formInputElement.value = existingTaskTextElement.innerText;
+          
+          // Finalize form element, then *replace* task text element
+          //  with this new form, and then focus on the form
+          newFormElement.appendChild(formInputElement);
+          existingTaskTextElement.parentNode.replaceChild(newFormElement,
+                                                          existingTaskTextElement);
+          formInputElement.focus();
+        } else if (event.target.dataset.state === "doneEditing") {
             // Invoke edit_task method from views.py
             const taskID = event.target.dataset.taskId; // Unique task ID
             const formInputElement = document.getElementById("edit-task-input-" + taskID);
@@ -144,3 +153,6 @@ editButtons.forEach((button) => {
         }
     });
 });
+
+
+// COMPLETING TASKS - also "Update"
