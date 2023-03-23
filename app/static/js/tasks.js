@@ -156,3 +156,44 @@ editButtons.forEach((button) => {
 
 
 // COMPLETING TASKS - also "Update"
+// This one is fairly simple: just strike through the text, then send a signal
+// to the backend indicating that the task has been completed, so that when the
+// user returns, the task is still finished (the whole point of the backend).
+var finButtons = document.querySelectorAll('.finish-button');
+// Then, add an event listener for each button
+finButtons.forEach((button) => {
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+    // Strike through text of the task
+    const taskID = event.target.dataset.taskId;
+    
+    const data = {
+      taskID: taskID
+    }
+
+    // Invoke complete_task method from views.py
+    fetch('/complete_task', {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Strike through text of task
+        var taskText = document.getElementById("task_text_" + taskID);
+        if (taskText.classList.contains("struck-through")) {
+          taskText.classList.remove("struck-through");
+        } else {
+          taskText.classList.add("struck-through");
+        }
+      } else {
+        alert('Failed to set task to complete. Please refresh the page and try again.');
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      alert('An error occurred while setting the task to completed.');
+      });
+    });
+  });

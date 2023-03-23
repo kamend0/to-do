@@ -2,6 +2,7 @@ from app import app, db
 from app.models import User, Task
 from flask import (request, session, g, current_app,
                    jsonify, redirect, url_for, render_template)
+from sqlalchemy.sql.expression import update
 from flask_dance.contrib.google import google
 from oauthlib.oauth2.rfc6749.errors import InvalidClientIdError, TokenExpiredError
 # from sys import stderr # DEBUG - print with this: print(value, file = stderr)
@@ -129,7 +130,9 @@ def add_task():
             user = session["email"]
 
             # Write to SQL database
-            new_task = Task(title = "NA", description = description, user_email = user)
+            new_task = Task(description = description,
+                            is_completed = False,
+                            user_email = user)
             db.session.add(new_task)
             db.session.commit()
 
@@ -218,6 +221,46 @@ def edit_task():
                 {
                     'success': True,
                     'message': "Task successfully edited"
+                }
+            )
+    
+    return response_to_client
+
+
+@app.route("/complete_task", methods = ['PUT'])
+def complete_task():
+    """Mark a user's task as complete by its unique ID so long as they are logged in - 'Update'"""
+    # Default response is a failure
+    response_to_client = jsonify(
+        {
+            'success': False,
+            'message': 'An error occurred. Please log in or try again'
+        }
+    )
+
+    # If conditions are met, edit the task, and update response body
+    if request.method == 'PUT':
+        if google.authorized and session["email"] is not None:
+            # ID needs to be passed by client to us, which will be unique both
+            #   throughout the tasks table as well as in the user's subset
+            data = request.get_json()
+            taskID = data["taskID"]
+
+            taskRow = Task.query.filter_by(
+                id = taskID,
+                user_email = session["email"]
+            ).first() # There will only be one, but be sure anyway
+            taskRow.is_completed = not taskRow.is_completed
+            db.session.commit()
+
+            task_status = "incomplete"
+            if (taskRow.is_completed):
+                task_status = "complete"
+            
+            response_to_client = jsonify(
+                {
+                    'success': True,
+                    'message': "Task successfully set to " + task_status
                 }
             )
     

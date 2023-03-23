@@ -25,7 +25,8 @@ body {
 #to-do-list {
     margin: auto;
     margin-left: 2%;
-    margin-top: 2%;
+    margin-top: 1%;
+    min-width: 60em;
     width: 50%;
     /* padding: 1.25em; */
     justify-content: left;
@@ -190,4 +191,9 @@ body {
     overflow-wrap: anywhere;
     white-space: anywhere;
     word-wrap: anywhere;
+}
+
+/* Added dynamically if tasks are finished */
+.struck-through {
+    text-decoration: line-through;
 }
