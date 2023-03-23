@@ -2,7 +2,7 @@
 
 ![A Screenshot of To-Do App](/images/tasks-screenshot.png)
 
-A straight-forward to-do list CRUD web app written in the Flask framework, using Jinja2 HTML templates as well as JavaScript for dynamic pages (e.g., replacing static text with submit form for editing tasks, and interacting with the Python backend). Features Google OAuth using the Flask-Dance library.
+A to-do list CRUD web app written in the Flask framework, using Jinja2 HTML templates as well as JavaScript for dynamic pages (e.g., replacing static text with submit form for editing tasks, and interacting with the Python backend). Features Google OAuth using the Flask-Dance library.
 
 Database is a local SQLite3. Currently, no passwords are stored; the only way to use the app is via Google OAuth.
 
@@ -12,9 +12,9 @@ Only configured to run locally currently, so Google OAuth redirect is to local p
 ## Some leftover items
 
 * Deploy to PythonAnywhere!
+* Enable usage by temporary users, where their tasks are only stored in perhaps the session, and are destroyed once they leave the page, unless they sign in.
 * Implement a simple email sign-up and login, exploring password encryption.
 * Implement task groups, and display tasks in groups.
-* Have an option for temporary users, where their tasks are only stored in perhaps the session, and are destroyed once they leave the page.
 
 
 ## Some thanks
