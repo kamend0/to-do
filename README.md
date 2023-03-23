@@ -1,5 +1,7 @@
 # Flask To-Do List
 
+![A Screenshot of To-Do App](/images/tasks-screenshot.png)
+
 A straight-forward to-do list CRUD web app written in the Flask framework, using Jinja2 HTML templates as well as JavaScript for dynamic pages (e.g., replacing static text with submit form for editing tasks, and interacting with the Python backend). Features Google OAuth using the Flask-Dance library.
 
 Database is a local SQLite3. Currently, no passwords are stored; the only way to use the app is via Google OAuth.
