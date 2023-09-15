@@ -11,7 +11,6 @@ Only configured to run locally currently, so Google OAuth redirect is to local p
 
 ## Some leftover items
 
-* Deploy to PythonAnywhere!
 * Enable usage by temporary users, where their tasks are only stored in perhaps the session, and are destroyed once they leave the page, unless they sign in.
 * Implement a simple email sign-up and login, exploring password encryption.
 * Implement task groups, and display tasks in groups.
